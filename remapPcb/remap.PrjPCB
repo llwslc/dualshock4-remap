@@ -99,7 +99,7 @@ SCH_PrintColor=0
 SCH_ShowNoErc=-1
 SCH_ShowParameter=-1
 SCH_ShowProbes=-1
-OutputFileName=remap.PcbDoc=C:\Users\mindoop\Desktop\dualshock4\remapPcb\remap.pdf
+OutputFileName=remap.PcbDoc=C:\Users\mindoop\Desktop\dualshock4-remap\remapPcb\remap.pdf
 SCH_ExpandLogicalToPhysical=-1
 SCH_VariantName=[None]
 SCH_ExpandComponentDesignators=-1
