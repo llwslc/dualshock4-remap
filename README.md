@@ -12,7 +12,7 @@
 
 ## ds4Client
 
-基于 [nodemcu](https://nodemcu-build.com/) 的客户端, 包含8个模块: file, gpio, node, pwm, tmr, uart, websocket, wifi.
+基于 [nodemcu](https://nodemcu-build.com/) 的客户端, 包含9个模块: file, gpio, node, pwm, sjson, tmr, uart, websocket, wifi.
 
 ## ds4Server
 
