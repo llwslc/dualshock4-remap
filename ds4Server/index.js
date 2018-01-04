@@ -1,25 +1,30 @@
+const express = require('express');
+const http = require('http');
+const url = require('url');
+const WebSocket = require('ws');
 
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var port = 3000;
+const app = express();
 
-app.get('/', function (req, res)
-{
-  res.send('Hello World!');
+app.use(function (req, res) {
+  res.send({ msg: "hello" });
 });
 
-io.on('connection', function (socket)
-{
-  console.log('connection');
-  socket.on('chat message', function (msg)
-  {
-    console.log('msg');
-    io.emit('chat message', msg);
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', function connection(ws, req) {
+	console.log('someone connection')
+  const location = url.parse(req.url, true);
+  // You might use location.query.access_token to authenticate or share sessions
+  // or req.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
+
+  ws.on('message', function incoming(message) {
+    console.log('received: %s', message);
   });
+
+  ws.send('something');
 });
 
-http.listen(port, function ()
-{
-  console.log('listening on *:' + port);
+server.listen(3000, function listening() {
+  console.log('Listening on %d', server.address().port);
 });
