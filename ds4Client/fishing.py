@@ -150,7 +150,11 @@ def getMainColor(arrowImg):
     pixels = [] # [(r,g,b), count]
     for count, (r, g, b) in arrowImg.getcolors(arrowImg.size[0] * arrowImg.size[1]):
         pixels.append([(r, g, b), count])
-    colors = kmeans.kmeans(pixels, 3)
+    try:
+        colors = kmeans.kmeans(pixels, 3)
+    except:
+        return blueFlag
+
     for (r, g, b) in colors:
         if b > 100:
             blueFlag = True
