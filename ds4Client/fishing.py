@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # backend use tkAgg
 import matplotlib
 matplotlib.use('tkAgg')
