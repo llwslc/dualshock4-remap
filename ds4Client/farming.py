@@ -42,9 +42,11 @@ def farmFunc():
     farmTimer.start()
 
     GPIO.output(DS4_L2, GPIO.HIGH)
+    GPIO.output(DS4_R1, GPIO.HIGH)
     GPIO.output(DS4_CROSS, GPIO.HIGH)
     time.sleep(0.5)
     GPIO.output(DS4_L2, GPIO.LOW)
+    GPIO.output(DS4_R1, GPIO.LOW)
     GPIO.output(DS4_CROSS, GPIO.LOW)
 
 def pressPS():
