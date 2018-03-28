@@ -7,28 +7,30 @@ import time
 
 from capture import WebcamImageGetter
 
-# initialize GPIO
-DS4_L1 = 16
-DS4_L2 = 36
-DS4_R1 = 18
-DS4_R2 = 38
-DS4_UP = 40
-DS4_SQUARE = 33
-DS4_TRIANGLE = 35
-DS4_CIRCLE = 37
-DS4_CROSS = 31
-DS4_PS = 29
+# initialize GPIO MAP [PIN Default Active]
+DS4_L1 = [16, GPIO.LOW, GPIO.HIGH]
+DS4_L2 = [36, GPIO.LOW, GPIO.HIGH]
+DS4_R1 = [18, GPIO.LOW, GPIO.HIGH]
+DS4_R2 = [38, GPIO.LOW, GPIO.HIGH]
+DS4_UP = [40, GPIO.HIGH, GPIO.LOW]
+DS4_SQUARE = [33, GPIO.HIGH, GPIO.LOW]
+DS4_TRIANGLE = [35, GPIO.HIGH, GPIO.LOW]
+DS4_CIRCLE = [37, GPIO.HIGH, GPIO.LOW]
+DS4_CROSS = [31, GPIO.HIGH, GPIO.LOW]
+DS4_PS = [29, GPIO.HIGH, GPIO.LOW]
+DS4_LY = [32, GPIO.HIGH, GPIO.LOW]
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(DS4_L1, GPIO.OUT, initial = GPIO.HIGH)
-GPIO.setup(DS4_L2, GPIO.OUT, initial = GPIO.HIGH)
-GPIO.setup(DS4_R1, GPIO.OUT, initial = GPIO.HIGH)
-GPIO.setup(DS4_R2, GPIO.OUT, initial = GPIO.HIGH)
-GPIO.setup(DS4_UP, GPIO.OUT, initial = GPIO.HIGH)
-GPIO.setup(DS4_SQUARE, GPIO.OUT, initial = GPIO.HIGH)
-GPIO.setup(DS4_TRIANGLE, GPIO.OUT, initial = GPIO.HIGH)
-GPIO.setup(DS4_CIRCLE, GPIO.OUT, initial = GPIO.HIGH)
-GPIO.setup(DS4_CROSS, GPIO.OUT, initial = GPIO.HIGH)
-GPIO.setup(DS4_PS, GPIO.OUT, initial = GPIO.HIGH)
+GPIO.setup(DS4_L1[0], GPIO.OUT, initial = DS4_L1[1])
+GPIO.setup(DS4_L2[0], GPIO.OUT, initial = DS4_L2[1])
+GPIO.setup(DS4_R1[0], GPIO.OUT, initial = DS4_R1[1])
+GPIO.setup(DS4_R2[0], GPIO.OUT, initial = DS4_R2[1])
+GPIO.setup(DS4_UP[0], GPIO.OUT, initial = DS4_UP[1])
+GPIO.setup(DS4_SQUARE[0], GPIO.OUT, initial = DS4_SQUARE[1])
+GPIO.setup(DS4_TRIANGLE[0], GPIO.OUT, initial = DS4_TRIANGLE[1])
+GPIO.setup(DS4_CIRCLE[0], GPIO.OUT, initial = DS4_CIRCLE[1])
+GPIO.setup(DS4_CROSS[0], GPIO.OUT, initial = DS4_CROSS[1])
+GPIO.setup(DS4_PS[0], GPIO.OUT, initial = DS4_PS[1])
+GPIO.setup(DS4_LY[0], GPIO.OUT, initial = DS4_LY[1])
 
 btnHeight = 3
 btnWidth = 10
@@ -46,8 +48,11 @@ cap.start()
 time.sleep(2)
 
 # y x min
-unknownItem = [276, 713, 200, 300]
-knownItem = [276, 713, 0, 30]
+unknownItem = [414, 1071, 200, 300]
+knownItem = [414, 1071, -1, 35]
+checkItem1 = [355, 1000, -1, 35]
+checkItem2 = [355, 1185, -1, 35]
+checkItem3 = [355, 1370, -1, 35]
 
 
 def checkItem(col, target):
@@ -75,56 +80,68 @@ def attackFunc():
     # print(1/(time.time()-refreshTime), (time.time()-refreshTime))
     # refreshTime = time.time()
 
-    GPIO.output(DS4_R1, GPIO.HIGH)
-    GPIO.output(DS4_L2, GPIO.HIGH)
-    GPIO.output(DS4_CIRCLE, GPIO.HIGH)
+    GPIO.output(DS4_R1[0], DS4_R1[1])
+    GPIO.output(DS4_L2[0], DS4_L2[1])
+    GPIO.output(DS4_CIRCLE[0], DS4_CIRCLE[1])
 
     time.sleep(sleepTime)
 
-    GPIO.output(DS4_L2, GPIO.LOW)
-    GPIO.output(DS4_R1, GPIO.LOW)
-    GPIO.output(DS4_CIRCLE, GPIO.LOW)
+    GPIO.output(DS4_R1[0], DS4_R1[2])
+    GPIO.output(DS4_L2[0], DS4_L2[2])
+    GPIO.output(DS4_CIRCLE[0], DS4_CIRCLE[2])
 
 def checkFunc():
     global checkTimer
     global refreshTime
 
-    checkTime = 5
+    checkTime = 3
     pressTime = 0.01
     checkTimer = threading.Timer(checkTime, checkFunc)
     checkTimer.start()
 
     image = cap.getFrame()
 
-    # print('item: ', image[unknownItem[0]][unknownItem[1]])
+    # print('unknownItem: ', image[unknownItem[0]][unknownItem[1]])
+    # print('knownItem: ', image[knownItem[0]][knownItem[1]])
+    # print('checkItem1: ', image[checkItem1[0]][checkItem1[1]])
+    # print('checkItem2: ', image[checkItem2[0]][checkItem2[1]])
+    # print('checkItem3: ', image[checkItem3[0]][checkItem3[1]])
 
     if not checkItem(image[unknownItem[0]][unknownItem[1]], unknownItem):
         if checkItem(image[knownItem[0]][knownItem[1]], knownItem):
-            # print('=======================> pick up')
-            GPIO.output(DS4_CROSS, GPIO.LOW)
-            time.sleep(pressTime)
-            GPIO.output(DS4_CROSS, GPIO.HIGH)
+            if checkItem(image[checkItem1[0]][knownItem[1]], checkItem1):
+                if checkItem(image[checkItem2[0]][checkItem2[1]], checkItem2):
+                    if checkItem(image[checkItem3[0]][checkItem3[1]], checkItem3):
+                        # print('=======================> pick up')
+                        # print('unknownItem: ', image[unknownItem[0]][unknownItem[1]])
+                        # print('knownItem: ', image[knownItem[0]][knownItem[1]])
+                        # print('checkItem1: ', image[checkItem1[0]][checkItem1[1]])
+                        # print('checkItem2: ', image[checkItem2[0]][checkItem2[1]])
+                        # print('checkItem3: ', image[checkItem3[0]][checkItem3[1]])
+                        GPIO.output(DS4_CROSS[0], DS4_CROSS[2])
+                        time.sleep(pressTime)
+                        GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
         else:
             # print('=======================> ignore <===')
-            GPIO.output(DS4_CROSS, GPIO.HIGH)
+            GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
     else:
         # print('=======================> ignore')
-        GPIO.output(DS4_CROSS, GPIO.HIGH)
+        GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
 
 def pressPS():
-    GPIO.output(DS4_PS, GPIO.LOW)
+    GPIO.output(DS4_PS[0], DS4_PS[2])
     time.sleep(1)
-    GPIO.output(DS4_PS, GPIO.HIGH)
+    GPIO.output(DS4_PS[0], DS4_PS[1])
     time.sleep(1)
 def pressX():
-    GPIO.output(DS4_CROSS, GPIO.LOW)
+    GPIO.output(DS4_CROSS[0], DS4_CROSS[2])
     time.sleep(1)
-    GPIO.output(DS4_CROSS, GPIO.HIGH)
+    GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
     time.sleep(1)
 def pressO():
-    GPIO.output(DS4_CIRCLE, GPIO.LOW)
+    GPIO.output(DS4_CIRCLE[0], DS4_CIRCLE[2])
     time.sleep(1)
-    GPIO.output(DS4_CIRCLE, GPIO.HIGH)
+    GPIO.output(DS4_CIRCLE[0], DS4_CIRCLE[1])
     time.sleep(1)
 def pressFarm():
     global farmFlag
@@ -136,10 +153,10 @@ def pressFarm():
         attackTimer.cancel()
         checkTimer.cancel()
         time.sleep(2)
-        GPIO.output(DS4_R1, GPIO.HIGH)
-        GPIO.output(DS4_L2, GPIO.HIGH)
-        GPIO.output(DS4_CROSS, GPIO.HIGH)
-        GPIO.output(DS4_CIRCLE, GPIO.HIGH)
+        GPIO.output(DS4_R1[0], DS4_R1[1])
+        GPIO.output(DS4_L2[0], DS4_L2[1])
+        GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
+        GPIO.output(DS4_CIRCLE[0], DS4_CIRCLE[1])
     else:
         btnFarm['bg'] = 'green'
         farmFlag = True
