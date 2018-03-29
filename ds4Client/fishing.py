@@ -126,6 +126,10 @@ refreshTime = time.time()
 def fishFunc():
     global fishTimer
     global refreshTime
+    global fishFlag
+
+    if not fishFlag:
+        return
 
     frameTime = 0.1
     sleepTime = 0.3

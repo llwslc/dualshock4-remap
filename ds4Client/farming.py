@@ -18,7 +18,7 @@ DS4_TRIANGLE = [35, GPIO.HIGH, GPIO.LOW]
 DS4_CIRCLE = [37, GPIO.HIGH, GPIO.LOW]
 DS4_CROSS = [31, GPIO.HIGH, GPIO.LOW]
 DS4_PS = [29, GPIO.HIGH, GPIO.LOW]
-DS4_LY = [32, GPIO.HIGH, GPIO.LOW]
+DS4_LX = [32, GPIO.LOW, GPIO.HIGH]
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(DS4_L1[0], GPIO.OUT, initial = DS4_L1[1])
 GPIO.setup(DS4_L2[0], GPIO.OUT, initial = DS4_L2[1])
@@ -30,7 +30,8 @@ GPIO.setup(DS4_TRIANGLE[0], GPIO.OUT, initial = DS4_TRIANGLE[1])
 GPIO.setup(DS4_CIRCLE[0], GPIO.OUT, initial = DS4_CIRCLE[1])
 GPIO.setup(DS4_CROSS[0], GPIO.OUT, initial = DS4_CROSS[1])
 GPIO.setup(DS4_PS[0], GPIO.OUT, initial = DS4_PS[1])
-GPIO.setup(DS4_LY[0], GPIO.OUT, initial = DS4_LY[1])
+GPIO.setup(DS4_LX[0], GPIO.OUT, initial = DS4_LX[1])
+
 
 btnHeight = 3
 btnWidth = 10
