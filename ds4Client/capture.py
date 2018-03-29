@@ -10,8 +10,8 @@ class WebcamImageGetter:
         self.currentFrame = [[0,0,0]]
 
         self.capture = cv2.VideoCapture(0)
-        self.capture.set(3, 1280)
-        self.capture.set(4, 720)
+        self.capture.set(3, 1920)
+        self.capture.set(4, 1080)
 
     def start(self):
         threading.Thread(target=self.updateFrame, args=()).start()
