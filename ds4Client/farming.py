@@ -8,9 +8,9 @@ import time
 from capture import WebcamImageGetter
 
 # initialize GPIO MAP [PIN Default Active]
-DS4_L1 = [16, GPIO.LOW, GPIO.HIGH]
+DS4_L1 = [16, GPIO.HIGH, GPIO.LOW]
 DS4_L2 = [36, GPIO.LOW, GPIO.HIGH]
-DS4_R1 = [18, GPIO.LOW, GPIO.HIGH]
+DS4_R1 = [18, GPIO.HIGH, GPIO.LOW]
 DS4_R2 = [38, GPIO.LOW, GPIO.HIGH]
 DS4_UP = [40, GPIO.HIGH, GPIO.LOW]
 DS4_SQUARE = [33, GPIO.HIGH, GPIO.LOW]
@@ -72,6 +72,10 @@ refreshTime = time.time()
 def attackFunc():
     global attackTimer
     global refreshTime
+    global farmFlag
+
+    if not farmFlag:
+        return
 
     attackTime = 1
     sleepTime = 0.5
@@ -81,19 +85,23 @@ def attackFunc():
     # print(1/(time.time()-refreshTime), (time.time()-refreshTime))
     # refreshTime = time.time()
 
-    GPIO.output(DS4_R1[0], DS4_R1[1])
-    GPIO.output(DS4_L2[0], DS4_L2[1])
-    GPIO.output(DS4_CIRCLE[0], DS4_CIRCLE[1])
-
-    time.sleep(sleepTime)
-
     GPIO.output(DS4_R1[0], DS4_R1[2])
     GPIO.output(DS4_L2[0], DS4_L2[2])
     GPIO.output(DS4_CIRCLE[0], DS4_CIRCLE[2])
 
+    time.sleep(sleepTime)
+
+    GPIO.output(DS4_R1[0], DS4_R1[1])
+    GPIO.output(DS4_L2[0], DS4_L2[1])
+    GPIO.output(DS4_CIRCLE[0], DS4_CIRCLE[1])
+
 def checkFunc():
     global checkTimer
     global refreshTime
+    global farmFlag
+
+    if not farmFlag:
+        return
 
     checkTime = 3
     pressTime = 0.01

@@ -12,9 +12,9 @@ from PIL import Image
 from capture import WebcamImageGetter
 
 # initialize GPIO MAP [PIN Default Active]
-DS4_L1 = [16, GPIO.LOW, GPIO.HIGH]
+DS4_L1 = [16, GPIO.HIGH, GPIO.LOW]
 DS4_L2 = [36, GPIO.LOW, GPIO.HIGH]
-DS4_R1 = [18, GPIO.LOW, GPIO.HIGH]
+DS4_R1 = [18, GPIO.HIGH, GPIO.LOW]
 DS4_R2 = [38, GPIO.LOW, GPIO.HIGH]
 DS4_UP = [40, GPIO.HIGH, GPIO.LOW]
 DS4_SQUARE = [33, GPIO.HIGH, GPIO.LOW]
