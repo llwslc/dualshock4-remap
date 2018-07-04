@@ -3,8 +3,11 @@
 import tkinter as tk
 import RPi.GPIO as GPIO
 import threading
+import dhash
 import time
+import cv2
 
+from PIL import Image
 from capture import WebcamImageGetter
 
 # initialize GPIO MAP [PIN Default Active]
@@ -40,6 +43,7 @@ btnRowIndex = 0
 btnColIndex = 0
 
 farmFlag = False
+ignoreFlag = True
 attackTimer = 0
 checkTimer = 0
 cap = WebcamImageGetter()
@@ -55,6 +59,33 @@ checkItem1 = [355, 1000, -1, 35]
 checkItem2 = [355, 1185, -1, 35]
 checkItem3 = [355, 1370, -1, 35]
 
+enchLv5Item = [378, 408, 1238, 1318]
+
+def getImgHash(img):
+    row, col = dhash.dhash_row_col(img)
+    mHash = dhash.format_hex(row, col)
+    mHash = '0x' + mHash
+
+    return int(mHash, 16)
+
+enchLv5ImgHash = getImgHash(Image.open('enchLv5.bmp'))
+
+def getEnchLevel(imageData):
+    COMPARE_PERCENTAGE = 15
+    lv5Flag = False
+
+    b, g, r = cv2.split(imageData)
+    rgbImg = cv2.merge([r, g, b])
+
+    img = Image.fromarray(rgbImg, 'RGB')
+
+    mBash = getImgHash(img)
+    if dhash.get_num_bits_different(mBash, enchLv5ImgHash) < COMPARE_PERCENTAGE:
+        lv5Flag = True
+    else:
+        pass
+
+    return lv5Flag
 
 def checkItem(col, target):
     checkFlag = True
@@ -110,32 +141,38 @@ def checkFunc():
 
     image = cap.getFrame()
 
-    # print('unknownItem: ', image[unknownItem[0]][unknownItem[1]])
-    # print('knownItem: ', image[knownItem[0]][knownItem[1]])
-    # print('checkItem1: ', image[checkItem1[0]][checkItem1[1]])
-    # print('checkItem2: ', image[checkItem2[0]][checkItem2[1]])
-    # print('checkItem3: ', image[checkItem3[0]][checkItem3[1]])
-
-    if not checkItem(image[unknownItem[0]][unknownItem[1]], unknownItem):
-        if checkItem(image[knownItem[0]][knownItem[1]], knownItem):
-            if checkItem(image[checkItem1[0]][knownItem[1]], checkItem1):
-                if checkItem(image[checkItem2[0]][checkItem2[1]], checkItem2):
-                    if checkItem(image[checkItem3[0]][checkItem3[1]], checkItem3):
-                        # print('=======================> pick up')
-                        # print('unknownItem: ', image[unknownItem[0]][unknownItem[1]])
-                        # print('knownItem: ', image[knownItem[0]][knownItem[1]])
-                        # print('checkItem1: ', image[checkItem1[0]][checkItem1[1]])
-                        # print('checkItem2: ', image[checkItem2[0]][checkItem2[1]])
-                        # print('checkItem3: ', image[checkItem3[0]][checkItem3[1]])
-                        GPIO.output(DS4_CROSS[0], DS4_CROSS[2])
-                        time.sleep(pressTime)
-                        GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
-        else:
-            # print('=======================> ignore <===')
+    if ignoreFlag:
+        if getEnchLevel(image[enchLv5Item[0]:enchLv5Item[1], enchLv5Item[2]:enchLv5Item[3]]):
+            GPIO.output(DS4_CROSS[0], DS4_CROSS[2])
+            time.sleep(pressTime)
             GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
     else:
-        # print('=======================> ignore')
-        GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
+        # print('unknownItem: ', image[unknownItem[0]][unknownItem[1]])
+        # print('knownItem: ', image[knownItem[0]][knownItem[1]])
+        # print('checkItem1: ', image[checkItem1[0]][checkItem1[1]])
+        # print('checkItem2: ', image[checkItem2[0]][checkItem2[1]])
+        # print('checkItem3: ', image[checkItem3[0]][checkItem3[1]])
+
+        if not checkItem(image[unknownItem[0]][unknownItem[1]], unknownItem):
+            if checkItem(image[knownItem[0]][knownItem[1]], knownItem):
+                if checkItem(image[checkItem1[0]][knownItem[1]], checkItem1):
+                    if checkItem(image[checkItem2[0]][checkItem2[1]], checkItem2):
+                        if checkItem(image[checkItem3[0]][checkItem3[1]], checkItem3):
+                            # print('=======================> pick up')
+                            # print('unknownItem: ', image[unknownItem[0]][unknownItem[1]])
+                            # print('knownItem: ', image[knownItem[0]][knownItem[1]])
+                            # print('checkItem1: ', image[checkItem1[0]][checkItem1[1]])
+                            # print('checkItem2: ', image[checkItem2[0]][checkItem2[1]])
+                            # print('checkItem3: ', image[checkItem3[0]][checkItem3[1]])
+                            GPIO.output(DS4_CROSS[0], DS4_CROSS[2])
+                            time.sleep(pressTime)
+                            GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
+            else:
+                # print('=======================> ignore <===')
+                GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
+        else:
+            # print('=======================> ignore')
+            GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
 
 def pressPS():
     GPIO.output(DS4_PS[0], DS4_PS[2])
@@ -173,6 +210,16 @@ def pressFarm():
         attackTimer.start()
         checkTimer = threading.Timer(1, checkFunc)
         checkTimer.start()
+def pressIgnore():
+    global ignoreFlag
+    if ignoreFlag:
+        btnIgnore['bg'] = 'red'
+        btnIgnore['text'] = 'keep'
+        ignoreFlag = False
+    else:
+        btnIgnore['bg'] = 'green'
+        btnIgnore['text'] = 'ignore'
+        ignoreFlag = True
 
 def handleClose():
     global attackTimer
@@ -205,6 +252,11 @@ btnO.grid(row = btnRowIndex, column = btnColIndex, padx = btnPad, pady = btnPad)
 
 btnRowIndex = btnRowIndex + 1
 btnColIndex = 0
+btnIgnore = tk.Button(root, text = 'ignore', bg = 'green', height = btnHeight, width = btnWidth)
+btnIgnore['command'] = pressIgnore
+btnIgnore.grid(row = btnRowIndex, column = btnColIndex, padx = btnPad, pady = btnPad)
+
+btnColIndex = btnColIndex + 1
 btnFarm = tk.Button(root, text = 'Farm', bg = 'red', height = btnHeight, width = btnWidth)
 btnFarm['command'] = pressFarm
 btnFarm.grid(row = btnRowIndex, column = btnColIndex, padx = btnPad, pady = btnPad)
