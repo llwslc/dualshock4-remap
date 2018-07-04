@@ -207,6 +207,11 @@ def pressR1():
     time.sleep(1)
     GPIO.output(DS4_R1[0], DS4_R1[1])
     time.sleep(1)
+def pressCap():
+    image = cap.getFrame()
+    image = image[378:408, 1238:1318]
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    cv2.imwrite("temp.bmp", image)
 
 def pressIgnore():
     global ignoreFlag
