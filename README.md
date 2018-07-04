@@ -12,8 +12,4 @@
 
 ## ds4Client
 
-基于 [nodemcu](https://nodemcu-build.com/) 的客户端, 包含9个模块: file, gpio, node, pwm, sjson, tmr, uart, websocket, wifi.
-
-## ds4Server
-
-基于 node.js 的服务器
+基于 [Raspberry Pi](https://www.raspberrypi.org/) 运行程序, 使用 [VNC Viewer](https://www.realvnc.com/en/) 远程控制.
