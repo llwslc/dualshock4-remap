@@ -9,3 +9,5 @@ pip3 install dhash
 
 chmod +x farming.py
 chmod +x fishing.py
+chmod +x click.py
+chmod +x flower.py
