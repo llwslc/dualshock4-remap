@@ -43,7 +43,7 @@ btnRowIndex = 0
 btnColIndex = 0
 
 fishFlag = False
-ignoreFlag = True
+ignoreFlag = False
 fishTimer = 0
 cap = WebcamImageGetter()
 cap.start()
@@ -208,8 +208,9 @@ def pressR1():
     GPIO.output(DS4_R1[0], DS4_R1[1])
     time.sleep(1)
 def pressCap():
+    # capture frame
     image = cap.getFrame()
-    image = image[378:408, 1238:1318]
+    image = image[100:300, 150:500]
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     cv2.imwrite("temp.bmp", image)
 
@@ -271,7 +272,7 @@ btnO.grid(row = btnRowIndex, column = btnColIndex, padx = btnPad, pady = btnPad)
 
 btnRowIndex = btnRowIndex + 1
 btnColIndex = 0
-btnIgnore = tk.Button(root, text = 'ignore', bg = 'green', height = btnHeight, width = btnWidth)
+btnIgnore = tk.Button(root, text = 'keep', bg = 'red', height = btnHeight, width = btnWidth)
 btnIgnore['command'] = pressIgnore
 btnIgnore.grid(row = btnRowIndex, column = btnColIndex, padx = btnPad, pady = btnPad)
 
