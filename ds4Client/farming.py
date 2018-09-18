@@ -43,23 +43,27 @@ btnRowIndex = 0
 btnColIndex = 0
 
 farmFlag = False
-ignoreFlag = True
+ignoreFlag = False
 attackTimer = 0
 checkTimer = 0
+loginTimer = 0
 cap = WebcamImageGetter()
 cap.start()
 
 # allow the camera to warmup
 time.sleep(2)
 
-# y x min
+# y x min max
 unknownItem = [414, 1071, 200, 300]
 knownItem = [414, 1071, -1, 35]
 checkItem1 = [355, 1000, -1, 35]
 checkItem2 = [355, 1185, -1, 35]
 checkItem3 = [355, 1370, -1, 35]
 
+# y start - y end corner and x start - x end corner
 enchLv5Item = [378, 408, 1238, 1318]
+accountInterface = [100, 300, 150, 500]
+characterInterface = [830, 1030, 1470, 1820]
 
 def getImgHash(img):
     row, col = dhash.dhash_row_col(img)
@@ -69,10 +73,12 @@ def getImgHash(img):
     return int(mHash, 16)
 
 enchLv5ImgHash = getImgHash(Image.open('enchLv5.bmp'))
+accountImgHash = getImgHash(Image.open('account.bmp'))
+characterImgHash = getImgHash(Image.open('character.bmp'))
 
-def getEnchLevel(imageData):
+def sameImgCheck(imageData, imgHash):
     COMPARE_PERCENTAGE = 15
-    lv5Flag = False
+    sameFlag = False
 
     b, g, r = cv2.split(imageData)
     rgbImg = cv2.merge([r, g, b])
@@ -80,12 +86,12 @@ def getEnchLevel(imageData):
     img = Image.fromarray(rgbImg, 'RGB')
 
     mBash = getImgHash(img)
-    if dhash.get_num_bits_different(mBash, enchLv5ImgHash) < COMPARE_PERCENTAGE:
-        lv5Flag = True
+    if dhash.get_num_bits_different(mBash, imgHash) < COMPARE_PERCENTAGE:
+        sameFlag = True
     else:
         pass
 
-    return lv5Flag
+    return sameFlag
 
 def checkItem(col, target):
     checkFlag = True
@@ -105,6 +111,7 @@ def attackFunc():
     global refreshTime
     global farmFlag
 
+    # print('=======================> attack')
     if not farmFlag:
         return
 
@@ -131,6 +138,7 @@ def checkFunc():
     global refreshTime
     global farmFlag
 
+    # print('=======================> check')
     if not farmFlag:
         return
 
@@ -142,7 +150,7 @@ def checkFunc():
     image = cap.getFrame()
 
     if ignoreFlag:
-        if getEnchLevel(image[enchLv5Item[0]:enchLv5Item[1], enchLv5Item[2]:enchLv5Item[3]]):
+        if sameImgCheck(image[enchLv5Item[0]:enchLv5Item[1], enchLv5Item[2]:enchLv5Item[3]], enchLv5ImgHash):
             GPIO.output(DS4_CROSS[0], DS4_CROSS[2])
             time.sleep(pressTime)
             GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
@@ -174,6 +182,43 @@ def checkFunc():
             # print('=======================> ignore')
             GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
 
+def loginFunc():
+    global attackTimer
+    global checkTimer
+    global loginTimer
+    global farmFlag
+
+    loginTime = 60
+    pressTime = 0.1
+    loginTakeTime = 10
+    loginTimer = threading.Timer(loginTime, loginFunc)
+    loginTimer.start()
+
+    image = cap.getFrame()
+
+    if sameImgCheck(image[accountInterface[0]:accountInterface[1], accountInterface[2]:accountInterface[3]], accountImgHash):
+        farmFlag = False
+        attackTimer.cancel()
+        checkTimer.cancel()
+        time.sleep(loginTakeTime)
+
+        # print('=======================> login')
+        GPIO.output(DS4_CROSS[0], DS4_CROSS[2])
+        time.sleep(pressTime)
+        GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
+
+    if sameImgCheck(image[characterInterface[0]:characterInterface[1], characterInterface[2]:characterInterface[3]], characterImgHash):
+        GPIO.output(DS4_CROSS[0], DS4_CROSS[2])
+        time.sleep(pressTime)
+        GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
+
+        # print('=======================> character')
+        farmFlag = True
+        attackTimer = threading.Timer(1, attackFunc)
+        attackTimer.start()
+        checkTimer = threading.Timer(1, checkFunc)
+        checkTimer.start()
+
 def pressPS():
     GPIO.output(DS4_PS[0], DS4_PS[2])
     time.sleep(1)
@@ -193,11 +238,13 @@ def pressFarm():
     global farmFlag
     global attackTimer
     global checkTimer
+    global loginTimer
     if farmFlag:
         btnFarm['bg'] = 'red'
         farmFlag = False
         attackTimer.cancel()
         checkTimer.cancel()
+        loginTimer.cancel()
         time.sleep(2)
         GPIO.output(DS4_R1[0], DS4_R1[1])
         GPIO.output(DS4_L2[0], DS4_L2[1])
@@ -210,6 +257,8 @@ def pressFarm():
         attackTimer.start()
         checkTimer = threading.Timer(1, checkFunc)
         checkTimer.start()
+        loginTimer = threading.Timer(1, loginFunc)
+        loginTimer.start()
 def pressIgnore():
     global ignoreFlag
     if ignoreFlag:
@@ -224,10 +273,13 @@ def pressIgnore():
 def handleClose():
     global attackTimer
     global checkTimer
+    global loginTimer
     if attackTimer != 0:
         attackTimer.cancel()
     if checkTimer != 0:
         checkTimer.cancel()
+    if loginTimer != 0:
+        loginTimer.cancel()
     cap.stop()
     root.destroy()
     GPIO.cleanup()
@@ -252,7 +304,7 @@ btnO.grid(row = btnRowIndex, column = btnColIndex, padx = btnPad, pady = btnPad)
 
 btnRowIndex = btnRowIndex + 1
 btnColIndex = 0
-btnIgnore = tk.Button(root, text = 'ignore', bg = 'green', height = btnHeight, width = btnWidth)
+btnIgnore = tk.Button(root, text = 'keep', bg = 'red', height = btnHeight, width = btnWidth)
 btnIgnore['command'] = pressIgnore
 btnIgnore.grid(row = btnRowIndex, column = btnColIndex, padx = btnPad, pady = btnPad)
 
