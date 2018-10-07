@@ -44,7 +44,9 @@ btnColIndex = 0
 
 fishFlag = False
 ignoreFlag = False
+placeFlag = False
 fishTimer = 0
+placeTimer = 0
 cap = WebcamImageGetter()
 cap.start()
 
@@ -187,6 +189,21 @@ def fishFunc():
     fishTimer = threading.Timer(frameTime, fishFunc)
     fishTimer.start()
 
+def flushBuffer():
+    global placeTimer
+
+    moveTime = 0.6
+    flushTime = 60 * 60
+    if placeFlag:
+        pass
+    else:
+        GPIO.output(DS4_LX[0], DS4_LX[2])
+        time.sleep(moveTime)
+        GPIO.output(DS4_LX[0], DS4_LX[1])
+
+    placeTimer = threading.Timer(flushTime, flushBuffer)
+    placeTimer.start()
+
 def pressPS():
     GPIO.output(DS4_PS[0], DS4_PS[2])
     time.sleep(1)
@@ -225,6 +242,15 @@ def pressIgnore():
         btnIgnore['text'] = 'ignore'
         ignoreFlag = True
 
+def pressPlace():
+    global placeFlag
+    if placeFlag:
+        btnPlace['text'] = 'Chult'
+        placeFlag = False
+    else:
+        btnPlace['text'] = 'Sea'
+        placeFlag = True
+
 def pressFish():
     global fishFlag
     global fishTimer
@@ -246,11 +272,18 @@ def pressFish():
         fishTimer.start()
 
 def handleClose():
+    global fishTimer
+    global placeTimer
+
     if fishTimer != 0:
         fishTimer.cancel()
+    if placeTimer != 0:
+        placeTimer.cancel()
     cap.stop()
     root.destroy()
     GPIO.cleanup()
+
+flushBuffer()
 
 root = tk.Tk()
 root.geometry('+0+0')
@@ -288,6 +321,11 @@ btnR1.grid(row = btnRowIndex, column = btnColIndex, padx = btnPad, pady = btnPad
 
 btnRowIndex = btnRowIndex + 1
 btnColIndex = 0
+btnPlace = tk.Button(root, text = 'Chult', height = btnHeight, width = btnWidth)
+btnPlace['command'] = pressPlace
+btnPlace.grid(row = btnRowIndex, column = btnColIndex, padx = btnPad, pady = btnPad)
+
+btnColIndex = btnColIndex + 1
 btnQuit = tk.Button(root, text = 'QUIT', height = btnHeight, width = btnWidth, fg = 'red', command = handleClose)
 btnQuit.grid(row = btnRowIndex, column = btnColIndex, padx = btnPad, pady = btnPad)
 
