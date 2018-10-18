@@ -43,7 +43,6 @@ btnRowIndex = 0
 btnColIndex = 0
 
 farmFlag = False
-ignoreFlag = False
 attackTimer = 0
 checkTimer = 0
 loginTimer = 0
@@ -53,15 +52,8 @@ cap.start()
 # allow the camera to warmup
 time.sleep(2)
 
-# y x min max
-unknownItem = [414, 1071, 200, 300]
-knownItem = [414, 1071, -1, 35]
-checkItem1 = [355, 1000, -1, 35]
-checkItem2 = [355, 1185, -1, 35]
-checkItem3 = [355, 1370, -1, 35]
-
 # y start - y end corner and x start - x end corner
-enchLv5Item = [378, 408, 1238, 1318]
+ignoreItem = [370, 410, 1100, 1300]
 accountInterface = [100, 300, 150, 500]
 characterInterface = [830, 1030, 1470, 1820]
 
@@ -72,7 +64,7 @@ def getImgHash(img):
 
     return int(mHash, 16)
 
-enchLv5ImgHash = getImgHash(Image.open('enchLv5.bmp'))
+ignoreItemImgHash = getImgHash(Image.open('ignoreItem.bmp'))
 accountImgHash = getImgHash(Image.open('account.bmp'))
 characterImgHash = getImgHash(Image.open('character.bmp'))
 
@@ -92,18 +84,6 @@ def sameImgCheck(imageData, imgHash):
         pass
 
     return sameFlag
-
-def checkItem(col, target):
-    checkFlag = True
-
-    for i in range(len(col)):
-        if col[i] > target[2] and col[i] < target[3]:
-            pass
-        else:
-            checkFlag = False
-            break
-
-    return checkFlag
 
 refreshTime = time.time()
 def attackFunc():
@@ -142,45 +122,20 @@ def checkFunc():
     if not farmFlag:
         return
 
-    checkTime = 3
+    checkTime = 10
     pressTime = 0.01
     checkTimer = threading.Timer(checkTime, checkFunc)
     checkTimer.start()
 
     image = cap.getFrame()
 
-    if ignoreFlag:
-        if sameImgCheck(image[enchLv5Item[0]:enchLv5Item[1], enchLv5Item[2]:enchLv5Item[3]], enchLv5ImgHash):
-            GPIO.output(DS4_CROSS[0], DS4_CROSS[2])
-            time.sleep(pressTime)
-            GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
+    if sameImgCheck(image[ignoreItem[0]:ignoreItem[1], ignoreItem[2]:ignoreItem[3]], ignoreItemImgHash):
+        pass
     else:
-        # print('unknownItem: ', image[unknownItem[0]][unknownItem[1]])
-        # print('knownItem: ', image[knownItem[0]][knownItem[1]])
-        # print('checkItem1: ', image[checkItem1[0]][checkItem1[1]])
-        # print('checkItem2: ', image[checkItem2[0]][checkItem2[1]])
-        # print('checkItem3: ', image[checkItem3[0]][checkItem3[1]])
+        GPIO.output(DS4_CROSS[0], DS4_CROSS[2])
+        time.sleep(pressTime)
+        GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
 
-        if not checkItem(image[unknownItem[0]][unknownItem[1]], unknownItem):
-            if checkItem(image[knownItem[0]][knownItem[1]], knownItem):
-                if checkItem(image[checkItem1[0]][knownItem[1]], checkItem1):
-                    if checkItem(image[checkItem2[0]][checkItem2[1]], checkItem2):
-                        if checkItem(image[checkItem3[0]][checkItem3[1]], checkItem3):
-                            # print('=======================> pick up')
-                            # print('unknownItem: ', image[unknownItem[0]][unknownItem[1]])
-                            # print('knownItem: ', image[knownItem[0]][knownItem[1]])
-                            # print('checkItem1: ', image[checkItem1[0]][checkItem1[1]])
-                            # print('checkItem2: ', image[checkItem2[0]][checkItem2[1]])
-                            # print('checkItem3: ', image[checkItem3[0]][checkItem3[1]])
-                            GPIO.output(DS4_CROSS[0], DS4_CROSS[2])
-                            time.sleep(pressTime)
-                            GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
-            else:
-                # print('=======================> ignore <===')
-                GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
-        else:
-            # print('=======================> ignore')
-            GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
 
 def loginFunc():
     global attackTimer
@@ -259,16 +214,6 @@ def pressFarm():
         checkTimer.start()
         loginTimer = threading.Timer(1, loginFunc)
         loginTimer.start()
-def pressIgnore():
-    global ignoreFlag
-    if ignoreFlag:
-        btnIgnore['bg'] = 'red'
-        btnIgnore['text'] = 'keep'
-        ignoreFlag = False
-    else:
-        btnIgnore['bg'] = 'green'
-        btnIgnore['text'] = 'ignore'
-        ignoreFlag = True
 
 def handleClose():
     global attackTimer
@@ -304,11 +249,6 @@ btnO.grid(row = btnRowIndex, column = btnColIndex, padx = btnPad, pady = btnPad)
 
 btnRowIndex = btnRowIndex + 1
 btnColIndex = 0
-btnIgnore = tk.Button(root, text = 'keep', bg = 'red', height = btnHeight, width = btnWidth)
-btnIgnore['command'] = pressIgnore
-btnIgnore.grid(row = btnRowIndex, column = btnColIndex, padx = btnPad, pady = btnPad)
-
-btnColIndex = btnColIndex + 1
 btnFarm = tk.Button(root, text = 'Farm', bg = 'red', height = btnHeight, width = btnWidth)
 btnFarm['command'] = pressFarm
 btnFarm.grid(row = btnRowIndex, column = btnColIndex, padx = btnPad, pady = btnPad)
