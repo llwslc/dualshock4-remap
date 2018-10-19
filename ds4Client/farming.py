@@ -54,6 +54,7 @@ time.sleep(2)
 
 # y start - y end corner and x start - x end corner
 ignoreItem = [370, 410, 1100, 1300]
+pickupItem = [440, 470, 1100, 1200]
 accountInterface = [100, 300, 150, 500]
 characterInterface = [830, 1030, 1470, 1820]
 
@@ -65,6 +66,7 @@ def getImgHash(img):
     return int(mHash, 16)
 
 ignoreItemImgHash = getImgHash(Image.open('ignoreItem.bmp'))
+pickupItemImgHash = getImgHash(Image.open('pickupItem.bmp'))
 accountImgHash = getImgHash(Image.open('account.bmp'))
 characterImgHash = getImgHash(Image.open('character.bmp'))
 
@@ -131,10 +133,12 @@ def checkFunc():
 
     if sameImgCheck(image[ignoreItem[0]:ignoreItem[1], ignoreItem[2]:ignoreItem[3]], ignoreItemImgHash):
         pass
-    else:
+    elif sameImgCheck(image[pickupItem[0]:pickupItem[1], pickupItem[2]:pickupItem[3]], pickupItemImgHash):
         GPIO.output(DS4_CROSS[0], DS4_CROSS[2])
         time.sleep(pressTime)
         GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
+    else:
+        pass
 
 
 def loginFunc():
