@@ -52,52 +52,7 @@ cap.start()
 # allow the camera to warmup
 time.sleep(2)
 
-# y x min
-unknownItem = [414, 1071, 200, 300]
-knownItem = [414, 1071, -1, 35]
-checkItem1 = [355, 1000, -1, 35]
-checkItem2 = [355, 1185, -1, 35]
-checkItem3 = [355, 1370, -1, 35]
 
-enchLv5Item = [378, 408, 1238, 1318]
-
-def getImgHash(img):
-    row, col = dhash.dhash_row_col(img)
-    mHash = dhash.format_hex(row, col)
-    mHash = '0x' + mHash
-
-    return int(mHash, 16)
-
-enchLv5ImgHash = getImgHash(Image.open('enchLv5.bmp'))
-
-def getEnchLevel(imageData):
-    COMPARE_PERCENTAGE = 15
-    lv5Flag = False
-
-    b, g, r = cv2.split(imageData)
-    rgbImg = cv2.merge([r, g, b])
-
-    img = Image.fromarray(rgbImg, 'RGB')
-
-    mBash = getImgHash(img)
-    if dhash.get_num_bits_different(mBash, enchLv5ImgHash) < COMPARE_PERCENTAGE:
-        lv5Flag = True
-    else:
-        pass
-
-    return lv5Flag
-
-def checkItem(col, target):
-    checkFlag = True
-
-    for i in range(len(col)):
-        if col[i] > target[2] and col[i] < target[3]:
-            pass
-        else:
-            checkFlag = False
-            break
-
-    return checkFlag
 
 refreshTime = time.time()
 def attackFunc():
@@ -125,54 +80,6 @@ def attackFunc():
     time.sleep(sleepTime)
     GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
 
-
-def checkFunc():
-    global checkTimer
-    global refreshTime
-    global farmFlag
-
-    if not farmFlag:
-        return
-
-    checkTime = 3
-    pressTime = 0.01
-    checkTimer = threading.Timer(checkTime, checkFunc)
-    checkTimer.start()
-
-    image = cap.getFrame()
-
-    if slowFlag:
-        if getEnchLevel(image[enchLv5Item[0]:enchLv5Item[1], enchLv5Item[2]:enchLv5Item[3]]):
-            GPIO.output(DS4_CROSS[0], DS4_CROSS[2])
-            time.sleep(pressTime)
-            GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
-    else:
-        # print('unknownItem: ', image[unknownItem[0]][unknownItem[1]])
-        # print('knownItem: ', image[knownItem[0]][knownItem[1]])
-        # print('checkItem1: ', image[checkItem1[0]][checkItem1[1]])
-        # print('checkItem2: ', image[checkItem2[0]][checkItem2[1]])
-        # print('checkItem3: ', image[checkItem3[0]][checkItem3[1]])
-
-        if not checkItem(image[unknownItem[0]][unknownItem[1]], unknownItem):
-            if checkItem(image[knownItem[0]][knownItem[1]], knownItem):
-                if checkItem(image[checkItem1[0]][knownItem[1]], checkItem1):
-                    if checkItem(image[checkItem2[0]][checkItem2[1]], checkItem2):
-                        if checkItem(image[checkItem3[0]][checkItem3[1]], checkItem3):
-                            # print('=======================> pick up')
-                            # print('unknownItem: ', image[unknownItem[0]][unknownItem[1]])
-                            # print('knownItem: ', image[knownItem[0]][knownItem[1]])
-                            # print('checkItem1: ', image[checkItem1[0]][checkItem1[1]])
-                            # print('checkItem2: ', image[checkItem2[0]][checkItem2[1]])
-                            # print('checkItem3: ', image[checkItem3[0]][checkItem3[1]])
-                            GPIO.output(DS4_CROSS[0], DS4_CROSS[2])
-                            time.sleep(pressTime)
-                            GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
-            else:
-                # print('=======================> slow <===')
-                GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
-        else:
-            # print('=======================> slow')
-            GPIO.output(DS4_CROSS[0], DS4_CROSS[1])
 
 def pressPS():
     GPIO.output(DS4_PS[0], DS4_PS[2])
