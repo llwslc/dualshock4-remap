@@ -3,12 +3,7 @@
 import tkinter as tk
 import RPi.GPIO as GPIO
 import threading
-import dhash
 import time
-import cv2
-
-from PIL import Image
-from capture import WebcamImageGetter
 
 # initialize GPIO MAP [PIN Default Active]
 DS4_L1 = [16, GPIO.HIGH, GPIO.LOW]
@@ -46,8 +41,6 @@ farmFlag = False
 slowFlag = True
 attackTimer = 0
 checkTimer = 0
-cap = WebcamImageGetter()
-cap.start()
 
 # allow the camera to warmup
 time.sleep(2)
@@ -133,7 +126,6 @@ def handleClose():
         attackTimer.cancel()
     if checkTimer != 0:
         checkTimer.cancel()
-    cap.stop()
     root.destroy()
     GPIO.cleanup()
 
